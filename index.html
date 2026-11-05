@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Diário do Capitão</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500&display=swap">
+<style>
+:root{--bg:#081014;--panel:#122027;--line:#27434e;--fg:#e6eef0;--muted:#8ea5ac;--accent:#f0892a;--bad:#e8605a;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(900px 500px at 50% -10%,rgba(240,137,42,.12),transparent 60%),var(--bg);color:var(--fg);font:15px Barlow,system-ui,sans-serif;padding:16px}
+body::after{content:"";position:fixed;inset:0;background:url(img/gp-splash.jpg) center 20%/cover no-repeat;opacity:.08;pointer-events:none;z-index:-1}
+form{width:min(360px,100%);background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:4px;padding:26px 24px;display:flex;flex-direction:column;gap:12px}
+h1{font:400 34px "Pirata One",Georgia,serif;margin:0;text-align:center}h1 span{color:var(--accent)}
+p{margin:0 0 6px;text-align:center;color:var(--muted);font-size:13px}
+label{font:600 12px "Barlow Condensed",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;flex-direction:column;gap:5px}
+input[type=text],input[type=password]{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:3px;padding:10px 12px;color:var(--fg);font:inherit;font-size:15px;text-transform:none;letter-spacing:0}
+input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.lembrar{flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font:14px Barlow,sans-serif}
+button{margin-top:4px;padding:11px;border:1px solid #ffc27f;border-radius:3px;background:linear-gradient(180deg,#f7a54f,#d9741a);color:#1a0e02;font:700 17px "Barlow Condensed",sans-serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+.erro{color:var(--bad);font-size:13px;text-align:center;min-height:18px}
+</style></head>
+<body>
+<form id="f" autocomplete="on">
+  <h1>Diário do <span>Capitão</span></h1>
+  <p>Acesso restrito</p>
+  <label>Usuário<input id="u" type="text" autocomplete="username" required></label>
+  <label>Senha<input id="s" type="password" autocomplete="current-password" required></label>
+  <label class="lembrar"><input id="l" type="checkbox"> Lembrar neste navegador</label>
+  <button id="b">Entrar</button>
+  <div class="erro" id="e" role="alert"></div>
+</form>
+<script src="me.js"></script>
+<script>
+const ACESSOS=[{"s": "yS71uVlkenhYFQ5reXF8DQ==", "i": "CnQGLI8pdEKC/JsP", "w": "U4uxun/wfthaz/pya145JgxufxwlQWO2neUSS48vx8WzqucRKc0WxODOZ+uxwncR"}], ITER=310000;
+const d64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function abrir(chaveRaw){
+  const k=await crypto.subtle.importKey('raw',chaveRaw,'AES-GCM',false,['decrypt']);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:d64(ENC.iv)},k,d64(ENC.ct));
+  const html=new TextDecoder().decode(pt);
+  document.open();document.write(html);document.close();
+}
+async function tentar(user,senha){
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(user.trim().toLowerCase()+'\n'+senha),'PBKDF2',false,['deriveKey']);
+  for(const a of ACESSOS){
+    const kek=await crypto.subtle.deriveKey({name:'PBKDF2',salt:d64(a.s),iterations:ITER,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+    try{return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:d64(a.i)},kek,d64(a.w)))}catch(e){}
+  }
+  return null;
+}
+(async()=>{try{const sv=localStorage.getItem('diario-chave');if(sv){await abrir(d64(sv));return}}catch(e){try{localStorage.removeItem('diario-chave')}catch(_){}}})();
+document.getElementById('f').addEventListener('submit',async ev=>{
+  ev.preventDefault();const b=document.getElementById('b'),e=document.getElementById('e');b.disabled=true;e.textContent='Verificando…';
+  const chave=await tentar(document.getElementById('u').value,document.getElementById('s').value);
+  if(!chave){e.textContent='Usuário ou senha incorretos.';b.disabled=false;return}
+  if(document.getElementById('l').checked){try{localStorage.setItem('diario-chave',btoa(String.fromCharCode(...chave)))}catch(_){}}
+  try{await abrir(chave)}catch(_){e.textContent='Não consegui abrir o Diário. Recarregue a página.';b.disabled=false}
+});
+</script>
+</body></html>

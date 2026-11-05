@@ -30,11 +30,14 @@ button:disabled{opacity:.6;cursor:wait}
   <button id="b">Entrar</button>
   <div class="erro" id="e" role="alert"></div>
 </form>
-<script src="me.js"></script>
 <script>
-const ACESSOS=[{"s": "yS71uVlkenhYFQ5reXF8DQ==", "i": "CnQGLI8pdEKC/JsP", "w": "U4uxun/wfthaz/pya145JgxufxwlQWO2neUSS48vx8WzqucRKc0WxODOZ+uxwncR"}], ITER=310000;
+const ACESSOS=[{"s": "BGTXsRprhnta9Y9Rd6efBw==", "i": "YOrhKNVZ9m9BEa4L", "w": "E9u9GMBYtHWZnxrmgIlcMumvfj9oz3pKY/A2slnlmJOSUM0Lma39JJgswehRirw2"}], ITER=310000;
 const d64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+// busca sempre a versão mais nova dos dados criptografados (sem cache do navegador)
+async function dados(){const r=await fetch('me.js?t='+Date.now(),{cache:'no-store'});const t=await r.text();
+  return JSON.parse(t.trim().replace(/^window\.ENC=/,'').replace(/;$/,''))}
 async function abrir(chaveRaw){
+  const ENC=await dados();
   const k=await crypto.subtle.importKey('raw',chaveRaw,'AES-GCM',false,['decrypt']);
   const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:d64(ENC.iv)},k,d64(ENC.ct));
   const html=new TextDecoder().decode(pt);

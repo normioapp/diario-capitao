@@ -31,13 +31,14 @@ button:disabled{opacity:.6;cursor:wait}
   <div class="erro" id="e" role="alert"></div>
 </form>
 <script>
-const ACESSOS=[{"s": "H5k3EeTfyTriPgMSFw1K5g==", "i": "qa4QaCyAOHkh0rqH", "w": "1p1/GVLJ/JLtyzrvWhiR9cF6u5phC+5lBol3yU2f7GolFdtUVaehM5iOSeKCcAaa"}, {"s": "Hpd9T1fyxurMM56jS6J4HA==", "i": "8M3sOSbj1qjl9Zmu", "w": "Y9oqqnuoCTjvTEQvmQTe81DRykA61hWpvPmq6nF4U1m4CAqswTeBPoFUt42gV1ZN"}], ITER=310000;
+const ACESSOS=[{"s": "/mTS7ad9LU7StIeG73qvqA==", "i": "tpCDiOvpBRww/ghj", "w": "y8rT2UhR0QvXbysKj07bbLOmJd2qlax6b0SMFmMOf4HIYCq+sTaOFJb5nJWzqxXN"}, {"s": "cz408vMVud8uHY2JvAAF4A==", "i": "Ka+rGNja78kYpBNo", "w": "3BpUX22guUcpid6KbuVAi1So03X3evecQQXLJguLhoYKEHP72udkc/od3QkfzZZJ"}], ITER=310000;
 const d64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 // busca sempre a versão mais nova dos dados criptografados (sem cache do navegador)
 async function dados(){const r=await fetch('me.js?t='+Date.now(),{cache:'no-store'});const t=await r.text();
   return JSON.parse(t.trim().replace(/^window\.ENC=/,'').replace(/;$/,''))}
 async function abrir(chaveRaw){
   const ENC=await dados();
+  try{sessionStorage.setItem('diario-iv',ENC.iv);sessionStorage.setItem('diario-chave-s',btoa(String.fromCharCode(...chaveRaw)))}catch(_){}
   const k=await crypto.subtle.importKey('raw',chaveRaw,'AES-GCM',false,['decrypt']);
   const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:d64(ENC.iv)},k,d64(ENC.ct));
   const html=new TextDecoder().decode(pt);
@@ -51,7 +52,7 @@ async function tentar(user,senha){
   }
   return null;
 }
-(async()=>{try{const sv=localStorage.getItem('diario-chave');if(sv){await abrir(d64(sv));return}}catch(e){try{localStorage.removeItem('diario-chave')}catch(_){}}})();
+(async()=>{try{let sv=null;try{sv=localStorage.getItem('diario-chave')}catch(_){}if(!sv){try{sv=sessionStorage.getItem('diario-chave-s')}catch(_){}}if(sv){await abrir(d64(sv));return}}catch(e){try{localStorage.removeItem('diario-chave')}catch(_){}}})();
 document.getElementById('f').addEventListener('submit',async ev=>{
   ev.preventDefault();const b=document.getElementById('b'),e=document.getElementById('e');b.disabled=true;e.textContent='Verificando…';
   const chave=await tentar(document.getElementById('u').value,document.getElementById('s').value);

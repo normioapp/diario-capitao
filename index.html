@@ -31,7 +31,7 @@ button:disabled{opacity:.6;cursor:wait}
   <div class="erro" id="e" role="alert"></div>
 </form>
 <script>
-const ACESSOS=[{"s": "Oxlk7sSGYp1x2bLQ1mgJjA==", "i": "QqJJ678+/x9Ud7cK", "w": "1XlBe6fGMW9ros+0OmHeoCDM42io0tNXOTOdVjKM5ilqg0DbTWa0PrYeWGRKVQMT"}, {"s": "OVgcB4xZX/Crf9vygBkOlA==", "i": "hBkKU2XsPGRxhOuD", "w": "YcQAPzZAKBDpLBi77TzYDfb2w+Lr9Voy2H0gAa68t8fQmUO+v+2TBja7Nx0qmHqj"}], ITER=310000;
+const ACESSOS=[{"s": "1/5lqCoo5e/yEfTZTSPaWg==", "i": "fK0MkqPDsP4UiV4J", "w": "On9oF5kVj8XDnrgT/8MHnekES/JEZJlH8X67osrFiwl5Fbtj4R6anXo1WhK1QynX"}, {"s": "kxJjyvsV2tIKq2hGMFw9jQ==", "i": "BzqA55o4oP3CTtG1", "w": "4HvCZ/4TYAlxzRu54NQUMEjGcs4+8yF8nQaIs5j87K+9/LRegDuJrIE/rkCA49rz"}], ITER=310000;
 const d64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 // busca sempre a versão mais nova dos dados criptografados (sem cache do navegador)
 async function dados(){const r=await fetch('me.js?t='+Date.now(),{cache:'no-store'});const t=await r.text();
